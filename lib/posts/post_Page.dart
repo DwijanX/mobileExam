@@ -54,33 +54,78 @@ class _PostPageState extends State<PostPage> {
   }
 }
 
-class MyListWidget extends StatelessWidget {
+class MyListWidget extends StatefulWidget {
   final List<Post> items;
 
   MyListWidget({required this.items});
 
   @override
+  _MyListWidgetState createState() => _MyListWidgetState();
+}
+
+class _MyListWidgetState extends State<MyListWidget> {
+  List<int> ratings = List.filled(100, 0);
+  int listLen = 100;
+
+  void orderList() {
+    setState(() {
+      // Sort the items list based on ratings
+      widget.items.sort(
+          (a, b) => ratings[b.id % listLen].compareTo(ratings[a.id % listLen]));
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: items
-          .map((item) => ListTile(
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: orderList,
+          child: Text('Order List'),
+        ),
+        Expanded(
+          child: ListView(
+            children: widget.items.map((item) {
+              int index = widget.items.indexOf(item);
+              return ListTile(
                 title: Text(item.title),
                 subtitle: Row(
                   children: [
-                    RatingWidget(),
+                    RatingWidget(
+                      itemId: item.id,
+                      rating: ratings[item.id % listLen],
+                      onRatingChanged: (int rating) {
+                        setState(() {
+                          ratings[item.id % listLen] = rating;
+                        });
+                      },
+                    ),
                   ],
                 ),
                 onTap: () {
                   // Handle item tap here
                   print('Tapped on ${item.title}');
                 },
-              ))
-          .toList(),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }
 
 class RatingWidget extends StatefulWidget {
+  final int itemId;
+  final int rating;
+  final ValueChanged<int> onRatingChanged;
+
+  RatingWidget({
+    required this.itemId,
+    required this.rating,
+    required this.onRatingChanged,
+  });
+
   @override
   _RatingWidgetState createState() => _RatingWidgetState();
 }
@@ -89,30 +134,27 @@ class _RatingWidgetState extends State<RatingWidget> {
   int rating = 0;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        Text('Rating: ${widget.rating}'),
         for (int i = 1; i <= 5; i++)
           InkWell(
             onTap: () {
-              setState(() {
-                rating = i;
-              });
+              widget.onRatingChanged(i);
             },
             child: Icon(
-              i <= rating ? Icons.star : Icons.star_border,
+              i <= widget.rating ? Icons.star : Icons.star_border,
               color: Colors.yellow,
             ),
           ),
       ],
     );
   }
-}
-
-// Replace Welcome with your data model class
-class Welcome {
-  final String title;
-
-  Welcome({required this.title});
 }
