@@ -65,6 +65,11 @@ class MyListWidget extends StatelessWidget {
       children: items
           .map((item) => ListTile(
                 title: Text(item.title),
+                subtitle: Row(
+                  children: [
+                    RatingWidget(),
+                  ],
+                ),
                 onTap: () {
                   // Handle item tap here
                   print('Tapped on ${item.title}');
@@ -73,4 +78,41 @@ class MyListWidget extends StatelessWidget {
           .toList(),
     );
   }
+}
+
+class RatingWidget extends StatefulWidget {
+  @override
+  _RatingWidgetState createState() => _RatingWidgetState();
+}
+
+class _RatingWidgetState extends State<RatingWidget> {
+  int rating = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int i = 1; i <= 5; i++)
+          InkWell(
+            onTap: () {
+              setState(() {
+                rating = i;
+              });
+            },
+            child: Icon(
+              i <= rating ? Icons.star : Icons.star_border,
+              color: Colors.yellow,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// Replace Welcome with your data model class
+class Welcome {
+  final String title;
+
+  Welcome({required this.title});
 }
